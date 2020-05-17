@@ -2,5 +2,5 @@ steps:
 - name: 'gcr.io/kaniko-project/executor:latest'
   args:
     - --build-arg=BUNDLE_OPTIONS=--without development test
-    - --destination=gcr.io/cloudrun-connection-redis/cloudrun-redis:latest
+    - --destination=gcr.io/<Google Cloud Platform Project ID>/<Container Image Name>:latest
     - --cache=true
