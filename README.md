@@ -1,24 +1,44 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This is a Rails application with Cloud Memorystore connection settings from Cloud Run managed.
 
-Things you may want to cover:
+# Deploy
 
-* Ruby version
+From building a container image to deploying it to Cloud Run, you can do the following.
 
-* System dependencies
+## Container build
 
-* Configuration
+The first step is to install the beta command, as of May 17, 2020, the connection option from Cloud Run to Cloud Memorystore is for beta.
 
-* Database creation
+```sh
+$ gcloud components install --quiet beta
+```
 
-* Database initialization
+Next, we will enable the build of this Rails container image to use Kaniko.
 
-* How to run the test suite
+```sh
+$ gcloud config set builds/use_kaniko True
+```
 
-* Services (job queues, cache servers, search engines, etc.)
+Finally, to build the container image, execute the command of Cloud Build, because the configuration of Cloud Build needs the specific configuration of `cloudbuild.yml`.
 
-* Deployment instructions
+```sh
+$ gcloud builds submit --project <Google Cloud Platform Project ID> --config ./cloudbuild.yml
+```
 
-* ...
+## Deploy to Cloud Run
+
+You can connect to Cloud Memorystore from Cloud Run by running the command to deploy to Cloud Run. The important option for this command is to specify `-vpc-connector`, which is the serverless VPC access connector created from Cloud Run. By specifying this, you can connect to a Cloud Memorystore instance set to `REDIS_HOST`.
+
+```sh
+$ gcloud beta run deploy <your cloud run service name> \
+  --image gcr.io/<Google Cloud Platform Project ID>/<Container Image Name>:latest \
+  --vpc-connector <your serverless vpc access connector name> \
+  --platform managed \
+  --region asia-northeast1 \
+  --allow-unauthenticated \
+  --set-env-vars RAILS_ENV=production \
+  --set-env-vars RAILS_MASTER_KEY=<your Rails master key> \
+  --set-env-vars REDIS_HOST=<your Cloud Memorystore instance host ip> \
+  --set-env-vars REDIS_PORT=6379
+```
